@@ -11,7 +11,14 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import {
+  Formik,
+  Form,
+  Field,
+  ErrorMessage,
+  FieldInputProps,
+  FormikProps,
+} from "formik";
 import * as Yup from "yup";
 import CostEstimation from "../costEstimation/CostEstimation";
 import { calculateEstimateApi } from "@/api/estimate";
@@ -36,6 +43,36 @@ interface CostData {
   };
   costBreakdown: Record<string, number>;
   maxCost: string;
+}
+
+const transformApiResponse = (
+  response: CalculateEstimateResponse
+): CostData => {
+  return {
+    constructionCost: {
+      min: response.constructionCost?.min ?? 0,
+      max: response.constructionCost?.max ?? 0,
+    },
+    interiorCost: {
+      min: response.interiorCost?.min ?? 0,
+      max: response.interiorCost?.max ?? 0,
+    },
+    costBreakdown: response.costBreakdown ?? {},
+    maxCost: response.maxCost ?? "0",
+  };
+};
+
+interface CalculateEstimateResponse {
+  constructionCost?: {
+    min?: number | null;
+    max?: number | null;
+  };
+  interiorCost?: {
+    min?: number | null;
+    max?: number | null;
+  };
+  costBreakdown?: Record<string, number> | null;
+  maxCost?: string | null;
 }
 
 const features = [
@@ -99,7 +136,11 @@ export default function ExploreSection() {
         area: Number.parseFloat(values.area),
       });
 
-      setCostData(response.data as CostData);
+      const transformedData = transformApiResponse(
+        response.data as CalculateEstimateResponse
+      );
+      setCostData(transformedData);
+
       setIsSubmitted(true);
     } catch (error) {
       console.error("Error during estimation:", error);
@@ -153,7 +194,13 @@ export default function ExploreSection() {
                   <Form className="md:w-[400px] space-y-3">
                     <div className="relative">
                       <Field name="state">
-                        {({ field, form }: { field: any; form: any }) => (
+                        {({
+                          field,
+                          form,
+                        }: {
+                          field: FieldInputProps<string>;
+                          form: FormikProps<FormValues>;
+                        }) => (
                           <Select
                             onValueChange={(value) =>
                               form.setFieldValue(field.name, value)
@@ -183,7 +230,13 @@ export default function ExploreSection() {
 
                     <div className="relative">
                       <Field name="city">
-                        {({ field, form }: { field: any; form: any }) => (
+                        {({
+                          field,
+                          form,
+                        }: {
+                          field: FieldInputProps<string>;
+                          form: FormikProps<FormValues>;
+                        }) => (
                           <Select
                             onValueChange={(value) =>
                               form.setFieldValue(field.name, value)
@@ -214,7 +267,7 @@ export default function ExploreSection() {
                     <div className="relative">
                       <div className="flex border rounded-md shadow-sm items-center space-x-4">
                         <Field name="area">
-                          {({ field }: { field: any }) => (
+                          {({ field }: { field: FieldInputProps<string> }) => (
                             <Input
                               type="text"
                               placeholder="Area"
@@ -227,7 +280,13 @@ export default function ExploreSection() {
                           <Separator orientation="vertical" />
                         </div>
                         <Field name="areaUnit">
-                          {({ field, form }: { field: any; form: any }) => (
+                          {({
+                            field,
+                            form,
+                          }: {
+                            field: FieldInputProps<string>;
+                            form: FormikProps<FormValues>;
+                          }) => (
                             <Select
                               onValueChange={(value) =>
                                 form.setFieldValue(field.name, value)
@@ -262,7 +321,7 @@ export default function ExploreSection() {
 
                     <div className="relative">
                       <Field name="constructionType">
-                        {({ field }: { field: any }) => (
+                        {({ field }: { field: FieldInputProps<string> }) => (
                           <Input
                             type="text"
                             placeholder="Type of construction"

@@ -10,14 +10,21 @@ interface SalesData {
 interface SalesChartProps {
   data: SalesData[];
   performanceChange: string;
+  label?: string; // Optional if it's not always required
+  height?: number;
 }
 
-export const SalesChart = ({ data, performanceChange }: SalesChartProps) => {
+export const SalesChart = ({
+  data,
+  performanceChange,
+  label,
+  height = 200,
+}: SalesChartProps) => {
   return (
     <div className="bg-white p-6 rounded-xl">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg font-semibold text-gray-900">
-          Sales Performance
+          {label || "Sales Performance"}
         </h2>
         <select className="p-2 border rounded-lg">
           <option>This week</option>
@@ -25,7 +32,7 @@ export const SalesChart = ({ data, performanceChange }: SalesChartProps) => {
         </select>
       </div>
 
-      <div className="h-[200px] w-full">
+      <div style={{ height }} className="w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={data}
@@ -56,7 +63,7 @@ export const SalesChart = ({ data, performanceChange }: SalesChartProps) => {
           {performanceChange}
         </span>
         <p className="text-gray-500 text-sm mt-1">
-          Your sales performance is {performanceChange} better compare to last
+          Your sales performance is {performanceChange} better compared to last
           month
         </p>
       </div>
