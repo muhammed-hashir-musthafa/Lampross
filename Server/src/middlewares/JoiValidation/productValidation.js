@@ -37,7 +37,7 @@ export const validateProduct = (data) => {
     deliveryCharge: Joi.number().required().min(0),
     hasWarranty: Joi.boolean().required(),
     hasISOCertificate: Joi.boolean().required(),
-    images: Joi.array().items(Joi.string().required()).min(1),
+    images: Joi.array().items(Joi.string()),
   });
 
   return schema.validate(data, { abortEarly: false });
