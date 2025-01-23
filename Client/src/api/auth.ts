@@ -12,6 +12,21 @@ interface LoginResponse {
   };
 }
 
+interface UserSignUpResponse {
+  success: boolean;
+  message: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    phoneNumber: string;
+    place: string;
+    age: number;
+    gender: string;
+  };
+}
+
 export const userSignUpApi = async (userData: {
   name: string;
   role: string;
@@ -20,8 +35,11 @@ export const userSignUpApi = async (userData: {
   place: string;
   age: number;
   gender: string;
-}): Promise<AxiosResponse<any>> => {
-  const response = await axiosInstance.post("/auth/register", userData);
+}): Promise<AxiosResponse<UserSignUpResponse>> => {
+  const response = await axiosInstance.post<UserSignUpResponse>(
+    "/auth/register",
+    userData
+  );
   return response;
 };
 

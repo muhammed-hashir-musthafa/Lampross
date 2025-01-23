@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import PhoneInput from "react-phone-input-2";
 import { userLoginApi } from "@/api/auth";
 import Link from "next/link";
+import { AxiosError } from "axios";
 import Image from "next/image";
 import "react-phone-input-2/lib/style.css";
 
@@ -35,8 +36,17 @@ const LoginForm: React.FC = () => {
 
       console.log("Login successful:", response);
       router.push("/dashboard");
-    } catch (error) {
-      console.error("Login failed:", error.response?.data?.message || error);
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        console.error(
+          "Login failed:",
+          error.response?.data?.message || error.message
+        );
+      } else if (error instanceof Error) {
+        console.error("Login failed:", error.message);
+      } else {
+        console.error("Login failed:", error);
+      }
     }
   };
 
@@ -114,7 +124,7 @@ const LoginForm: React.FC = () => {
           </Formik>
 
           <p className="mt-6 text-center text-gray-600">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/signup" className="text-blue-600 hover:underline">
               Become a partner
             </Link>

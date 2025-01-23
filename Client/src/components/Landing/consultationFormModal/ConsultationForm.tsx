@@ -1,9 +1,10 @@
 "use client";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, Field, ErrorMessage, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { createBookingApi } from "@/api/booking";
+import { isAxiosError } from "axios";
 
 interface BookingFormValues {
   name: string;
@@ -39,8 +40,8 @@ const BookingModal = ({ isOpen, onClose }: BookingModalProps) => {
   };
 
   const handleSubmit = async (
-    values: { name: string; phone: string; email: string; place: string },
-    actions: any
+    values: BookingFormValues,
+    actions: FormikHelpers<BookingFormValues>
   ) => {
     try {
       const response = await createBookingApi(values);
@@ -53,13 +54,17 @@ const BookingModal = ({ isOpen, onClose }: BookingModalProps) => {
         toast.error("Failed to create booking. Please try again.");
         actions.resetForm();
       }
-    } catch (error: any) {
-      if (error.response?.status === 400) {
-        toast.error("Booking already exists for this Phone Number.");
-      } else if (error.response?.status === 500) {
-        toast.error("Server error. Please try again later.");
+    } catch (error: unknown) {
+      if (isAxiosError(error)) {
+        if (error.response?.status === 400) {
+          toast.error("Booking already exists for this Phone Number.");
+        } else if (error.response?.status === 500) {
+          toast.error("Server error. Please try again later.");
+        } else {
+          toast.error("An error occurred. Please try again.");
+        }
       } else {
-        toast.error("An error occurred. Please try again.");
+        toast.error("An unexpected error occurred.");
       }
     } finally {
       actions.setSubmitting(false);

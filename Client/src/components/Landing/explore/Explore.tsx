@@ -17,6 +17,27 @@ import CostEstimation from "../costEstimation/CostEstimation";
 import { calculateEstimateApi } from "@/api/estimate";
 import { useState } from "react";
 
+interface FormValues {
+  state: string;
+  city: string;
+  area: string;
+  areaUnit: "sqft" | "sqm";
+  constructionType: string;
+}
+
+interface CostData {
+  constructionCost: {
+    min: number;
+    max: number;
+  };
+  interiorCost: {
+    min: number;
+    max: number;
+  };
+  costBreakdown: Record<string, number>;
+  maxCost: string;
+}
+
 const features = [
   {
     title: "Explore Designs",
@@ -58,9 +79,9 @@ const validationSchema = Yup.object().shape({
 
 export default function ExploreSection() {
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [costData, setCostData] = useState<any>(null);
+  const [costData, setCostData] = useState<CostData | null>(null);
 
-  const initialValues = {
+  const initialValues: FormValues = {
     state: "",
     city: "",
     area: "",
@@ -78,7 +99,7 @@ export default function ExploreSection() {
         area: Number.parseFloat(values.area),
       });
 
-      setCostData(response.data);
+      setCostData(response.data as CostData);
       setIsSubmitted(true);
     } catch (error) {
       console.error("Error during estimation:", error);

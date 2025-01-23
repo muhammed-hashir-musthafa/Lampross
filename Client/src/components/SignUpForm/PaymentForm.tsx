@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, Field, ErrorMessage, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import { useRouter } from "next/navigation";
 
@@ -58,7 +58,10 @@ const PaymentForm = () => {
     email: "",
   };
 
-  const handleSubmit = (values: any, actions: any) => {
+  const handleSubmit = (
+    values: typeof initialCardValues | typeof initialBankValues,
+    actions: FormikHelpers<typeof initialCardValues | typeof initialBankValues>
+  ) => {
     router.push("/");
     console.log(values);
     actions.setSubmitting(false);
@@ -141,7 +144,7 @@ const PaymentForm = () => {
               onSubmit={handleSubmit}
               enableReinitialize
             >
-              {({ isSubmitting, errors, touched }) => (
+              {({ isSubmitting }) => (
                 <Form className="space-y-4">
                   {paymentMethod === "Credit card" ? (
                     <>

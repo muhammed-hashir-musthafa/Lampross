@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, Field, ErrorMessage, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import { ChevronDown, HelpCircle } from "lucide-react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { useRouter } from "next/navigation";
-import { AxiosResponse } from "axios";
+import { AxiosResponse, AxiosError } from "axios";
 import toast from "react-hot-toast";
 import { userSignUpApi } from "@/api/auth";
 
@@ -19,6 +19,17 @@ interface AccountFormValues {
   place: string;
   age: string;
   gender: string;
+}
+
+interface SignUpResponse {
+  user: {
+    id: string;
+    name: string;
+    role: string;
+    phoneNumber: string;
+    email: string;
+    place: string;
+  };
 }
 
 const AccountSchema = Yup.object().shape({
@@ -54,7 +65,10 @@ const AccountCreationForm = () => {
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleSubmit = async (values: AccountFormValues, actions: any) => {
+  const handleSubmit = async (
+    values: AccountFormValues,
+    actions: FormikHelpers<AccountFormValues>
+  ) => {
     setIsLoading(true);
 
     const userData = {
@@ -68,28 +82,32 @@ const AccountCreationForm = () => {
     };
 
     try {
-      const response: AxiosResponse<any> = await userSignUpApi(userData);
+      const response: AxiosResponse<SignUpResponse> = await userSignUpApi(
+        userData
+      );
 
       if (response.status === 201) {
-         setIsSubmitted(true);
+        setIsSubmitted(true);
         actions.setSubmitting(false);
         toast.success("Account Created Successfully");
         localStorage.setItem("id", response.data.user.id);
         actions.resetForm();
-        router.push("/")
+        router.push("/");
       } else {
         toast.error("Failed to create account. Please try again.");
         actions.setSubmitting(false);
         actions.resetForm();
       }
-    } catch (error: any) {
-      if (error.response?.status === 500) {
-        toast.error("Server error. Please try again later.");
-      } else if (error.response?.status === 400) {
-        router.push("/login")
-        toast.error("User already exist. Please Login");
-      } else {
-        toast.error("An error occurred. Please try again.");
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 500) {
+          toast.error("Server error. Please try again later.");
+        } else if (error.response?.status === 400) {
+          router.push("/login");
+          toast.error("User already exist. Please Login");
+        } else {
+          toast.error("An error occurred. Please try again.");
+        }
       }
       actions.setSubmitting(false);
       actions.resetForm();
@@ -311,7 +329,7 @@ const AccountCreationForm = () => {
                   <HelpCircle className="text-orange-500" size={20} />
                   <div>
                     <p className="font-medium">
-                      Don't have enough time to finish the signup?
+                      Don&apos;t have enough time to finish the signup?
                     </p>
                     <p className="text-gray-600">
                       You can just create a profile and then come back later any
