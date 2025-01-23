@@ -118,7 +118,7 @@ const DesignsPageComponent = () => {
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const router = useParams();
   const designType = router?.type;
-  console.log(designType);
+  // console.log(designType);
 
   const designs: Design[] = [
     {

@@ -311,8 +311,8 @@ export const Header = () => {
                       </Link>
                       <Link href={"/signup"}>
                         <Button className="w-full justify-start">
-                        Become a partner
-                        <UserPlus className="ml-2 h-4 w-4" />
+                          Become a partner
+                          <UserPlus className="ml-2 h-4 w-4" />
                         </Button>
                       </Link>
                     </div>
@@ -321,14 +321,16 @@ export const Header = () => {
               </SheetContent>
             </Sheet>
           </nav>
-          <Image
-            src="/assets/logo.png"
-            alt="Lampros"
-            width={127}
-            height={127}
-            priority
-            className="w-auto"
-          />
+          <Link href={"/"}>
+            <Image
+              src="/assets/logo.png"
+              alt="Lampros"
+              width={127}
+              height={127}
+              priority
+              className="w-auto"
+            />
+          </Link>
         </div>
 
         <nav className="hidden xl:block flex-1 max-w-[909px] mx-8">

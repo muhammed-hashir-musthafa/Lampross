@@ -5,6 +5,7 @@ import Image from "next/image";
 import SearchInput from "./searchbox";
 import logo from "../../../public/assets/logo.png";
 import { LogOut } from "lucide-react";
+import Link from "next/link";
 
 const Navbar = () => {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -35,13 +36,15 @@ const Navbar = () => {
           <div className="flex items-center gap-2 sm:gap-8 flex-1">
             <div className="flex items-center gap-2 min-w-fit md:ml-0 ml-12">
               <div className="relative w-24 h-8 sm:w-28">
-                <Image
-                  src={logo}
-                  alt="Lampros"
-                  className="object-contain"
-                  priority
-                  fill
-                />
+                <Link href={"/"}>
+                  <Image
+                    src={logo}
+                    alt="Lampros"
+                    className="object-contain"
+                    priority
+                    fill
+                  />
+                </Link>
               </div>
               <span className="text-orange-500 font-bold text-lg sm:text-xl whitespace-nowrap">
                 Seller
