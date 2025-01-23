@@ -1,12 +1,12 @@
-import Joi from 'joi';
-import { ValidationError } from '../../utils/errors.js';
- 
+import Joi from "joi";
+import { ValidationError } from "../../utils/errors.js";
+
 const estimationSchema = Joi.object({
-  state: Joi.string().required(),
-  city: Joi.string().required(),
+  state: Joi.string(),
+  city: Joi.string(),
   area: Joi.number().positive().required(),
-  areaUnit: Joi.string().valid('sqft', 'sqm').required(),
-  constructionType: Joi.string().required()
+  areaUnit: Joi.string().valid("sqft", "sqm").required(),
+  constructionType: Joi.string().required(),
 });
 
 const validateEstimation = async (req, res, next) => {
@@ -14,7 +14,7 @@ const validateEstimation = async (req, res, next) => {
     await estimationSchema.validateAsync(req.body);
     next();
   } catch (error) {
-    next(new ValidationError('Invalid estimation parameters', error));
+    next(new ValidationError("Invalid estimation parameters", error));
   }
 };
 

@@ -34,3 +34,16 @@ export const calculateInteriorCost = (area, constructionType) => {
     max: Math.round((rate.max * area) / 100000),
   };
 };
+
+export const calculateCostBreakdown = (totalCost) => {
+  return {
+    foundation: Math.round(totalCost * 0.15),
+    structure: Math.round(totalCost * 0.25),
+    finishing: Math.round(totalCost * 0.2),
+    plumbing: Math.round(totalCost * 0.1),
+    electrical: Math.round(totalCost * 0.1),
+    windows: Math.round(totalCost * 0.08),
+    doors: Math.round(totalCost * 0.07),
+    others: Math.round(totalCost * 0.05),
+  };
+};

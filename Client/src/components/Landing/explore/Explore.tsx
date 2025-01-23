@@ -10,9 +10,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
 import { Separator } from "@/components/ui/separator";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 import CostEstimation from "../costEstimation/CostEstimation";
+import { calculateEstimateApi } from "@/api/estimate";
+import { useState } from "react";
 
 const features = [
   {
@@ -41,42 +44,47 @@ const features = [
   },
 ];
 
+const validationSchema = Yup.object().shape({
+  state: Yup.string().required("State is required"),
+  city: Yup.string().required("City is required"),
+  area: Yup.number()
+    .positive("Area must be positive")
+    .required("Area is required"),
+  areaUnit: Yup.string()
+    .oneOf(["sqft", "sqm"], "Invalid area unit")
+    .required("Area unit is required"),
+  constructionType: Yup.string().required("Construction type is required"),
+});
+
 export default function ExploreSection() {
-  const [formData, setFormData] = useState({
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [costData, setCostData] = useState<any>(null);
+
+  const initialValues = {
     state: "",
     city: "",
     area: "",
     areaUnit: "sqft",
     constructionType: "",
-  });
-
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const handleReset = () => {
-    setFormData({
-      state: "",
-      city: "",
-      area: "",
-      areaUnit: "sqft",
-      constructionType: "",
-    });
-    setIsSubmitted(false);
   };
 
-  const handleCalculate = () => {
-    console.log("Calculating with data:", formData);
+  const handleSubmit = async (
+    values: typeof initialValues,
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
+  ) => {
+    try {
+      const response = await calculateEstimateApi({
+        ...values,
+        area: Number.parseFloat(values.area),
+      });
 
-    setIsSubmitted(true);
-  };
-
-  const constructionCost = {
-    min: 10,
-    max: 15,
-  };
-
-  const interiorCost = {
-    min: 5,
-    max: 8,
+      setCostData(response.data);
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error("Error during estimation:", error);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -91,7 +99,7 @@ export default function ExploreSection() {
             <div key={index} className="flex gap-6">
               <div className="relative w-24 h-24 flex-shrink-0">
                 <Image
-                  src={feature.image}
+                  src={feature.image || "/placeholder.svg"}
                   alt={feature.title}
                   fill
                   className="rounded-full object-cover"
@@ -115,117 +123,166 @@ export default function ExploreSection() {
                 Get an estimate amount for your home construction
               </p>
 
-              <div className="md:w-[400px] space-y-3">
-                <div className="relative">
-                  <Select
-                    value={formData.state}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, state: value })
-                    }
-                  >
-                    <SelectTrigger className="w-full h-14 border border-gray-200 shadow-sm">
-                      <SelectValue placeholder="Select state" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="state1">State 1</SelectItem>
-                      <SelectItem value="state2">State 2</SelectItem>
-                      <SelectItem value="state3">State 3</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <label className="absolute text-xs text-gray-500 -top-1.5 left-3 bg-section px-1">
-                    Select state
-                  </label>
-                </div>
-
-                <div className="relative">
-                  <Select
-                    value={formData.city}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, city: value })
-                    }
-                  >
-                    <SelectTrigger className="w-full h-14 border border-gray-200 shadow-sm">
-                      <SelectValue placeholder="Select city" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="city1">City 1</SelectItem>
-                      <SelectItem value="city2">City 2</SelectItem>
-                      <SelectItem value="city3">City 3</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <label className="absolute text-xs text-gray-500 -top-1.5 left-3 bg-section px-1">
-                    Select city
-                  </label>
-                </div>
-
-                <div className="relative">
-                  <div className="flex border rounded-md shadow-sm items-center space-x-4">
-                    <Input
-                      type="text"
-                      placeholder="Area"
-                      value={formData.area}
-                      onChange={(e) =>
-                        setFormData({ ...formData, area: e.target.value })
-                      }
-                      className="flex-1 h-14 border-0 shadow-none"
-                    />
-                    <div className="flex h-8">
-                      <Separator orientation="vertical" />
+              <Formik
+                initialValues={initialValues}
+                validationSchema={validationSchema}
+                onSubmit={handleSubmit}
+              >
+                {({ isSubmitting, resetForm }) => (
+                  <Form className="md:w-[400px] space-y-3">
+                    <div className="relative">
+                      <Field name="state">
+                        {({ field, form }: { field: any; form: any }) => (
+                          <Select
+                            onValueChange={(value) =>
+                              form.setFieldValue(field.name, value)
+                            }
+                            value={field.value}
+                          >
+                            <SelectTrigger className="w-full h-14 border border-gray-200 shadow-sm">
+                              <SelectValue placeholder="Select state" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="state1">State 1</SelectItem>
+                              <SelectItem value="state2">State 2</SelectItem>
+                              <SelectItem value="state3">State 3</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </Field>
+                      <label className="absolute text-xs text-gray-500 -top-1.5 left-3 bg-section px-1">
+                        Select state
+                      </label>
+                      <ErrorMessage
+                        name="state"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
+                      />
                     </div>
-                    <Select
-                      value={formData.areaUnit}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, areaUnit: value })
-                      }
-                    >
-                      <SelectTrigger className="w-[100px] h-14 border-0 shadow-none">
-                        <SelectValue placeholder="Unit" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="sqft">Sq. feet</SelectItem>
-                        <SelectItem value="sqm">Sq. meter</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <label className="absolute text-xs text-gray-500 -top-1.5 left-3 bg-section px-1">
-                    Area
-                  </label>
-                </div>
 
-                <div className="relative">
-                  <Input
-                    type="text"
-                    placeholder="Type of construction"
-                    value={formData.constructionType}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        constructionType: e.target.value,
-                      })
-                    }
-                    className="w-full h-14 border border-gray-200 shadow-sm"
-                  />
-                  <label className="absolute text-xs text-gray-500 -top-1.5 left-3 bg-section px-1">
-                    Type of construction
-                  </label>
-                </div>
+                    <div className="relative">
+                      <Field name="city">
+                        {({ field, form }: { field: any; form: any }) => (
+                          <Select
+                            onValueChange={(value) =>
+                              form.setFieldValue(field.name, value)
+                            }
+                            value={field.value}
+                          >
+                            <SelectTrigger className="w-full h-14 border border-gray-200 shadow-sm">
+                              <SelectValue placeholder="Select city" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="city1">City 1</SelectItem>
+                              <SelectItem value="city2">City 2</SelectItem>
+                              <SelectItem value="city3">City 3</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </Field>
+                      <label className="absolute text-xs text-gray-500 -top-1.5 left-3 bg-section px-1">
+                        Select city
+                      </label>
+                      <ErrorMessage
+                        name="city"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
+                      />
+                    </div>
 
-                <div className="flex gap-3 pt-2">
-                  <Button
-                    variant="outline"
-                    onClick={handleReset}
-                    className="px-6 h-12 border-primary hover:bg-gray-50 hover:text-black rounded-lg"
-                  >
-                    Reset
-                  </Button>
-                  <Button
-                    className="flex-1 h-12 bg-[#FF6B00] hover:bg-[#FF6B00]/90 rounded-lg"
-                    onClick={handleCalculate}
-                  >
-                    Calculate cost
-                  </Button>
-                </div>
-              </div>
+                    <div className="relative">
+                      <div className="flex border rounded-md shadow-sm items-center space-x-4">
+                        <Field name="area">
+                          {({ field }: { field: any }) => (
+                            <Input
+                              type="text"
+                              placeholder="Area"
+                              {...field}
+                              className="flex-1 h-14 border-0 shadow-none"
+                            />
+                          )}
+                        </Field>
+                        <div className="flex h-8">
+                          <Separator orientation="vertical" />
+                        </div>
+                        <Field name="areaUnit">
+                          {({ field, form }: { field: any; form: any }) => (
+                            <Select
+                              onValueChange={(value) =>
+                                form.setFieldValue(field.name, value)
+                              }
+                              value={field.value}
+                            >
+                              <SelectTrigger className="w-[100px] h-14 border-0 shadow-none">
+                                <SelectValue placeholder="Unit" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="sqft">Sq. feet</SelectItem>
+                                <SelectItem value="sqm">Sq. meter</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </Field>
+                      </div>
+                      <label className="absolute text-xs text-gray-500 -top-1.5 left-3 bg-section px-1">
+                        Area
+                      </label>
+                      <ErrorMessage
+                        name="area"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
+                      />
+                      <ErrorMessage
+                        name="areaUnit"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
+                      />
+                    </div>
+
+                    <div className="relative">
+                      <Field name="constructionType">
+                        {({ field }: { field: any }) => (
+                          <Input
+                            type="text"
+                            placeholder="Type of construction"
+                            {...field}
+                            className="w-full h-14 border border-gray-200 shadow-sm"
+                          />
+                        )}
+                      </Field>
+                      <label className="absolute text-xs text-gray-500 -top-1.5 left-3 bg-section px-1">
+                        Type of construction
+                      </label>
+                      <ErrorMessage
+                        name="constructionType"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
+                      />
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          resetForm();
+                          setIsSubmitted(false);
+                        }}
+                        className="px-6 h-12 border-primary hover:bg-gray-50 hover:text-black rounded-lg"
+                      >
+                        Reset
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="flex-1 h-12 bg-[#FF6B00] hover:bg-[#FF6B00]/90 rounded-lg"
+                      >
+                        {isSubmitting ? "Calculating..." : "Calculate cost"}
+                      </Button>
+                    </div>
+                  </Form>
+                )}
+              </Formik>
             </div>
 
             <div className="relative h-full">
@@ -239,12 +296,9 @@ export default function ExploreSection() {
           </div>
         </div>
 
-        {isSubmitted && (
+        {isSubmitted && costData && (
           <div className="mt-12">
-            <CostEstimation
-              constructionCost={constructionCost}
-              interiorCost={interiorCost}
-            />
+            <CostEstimation costData={costData} />
           </div>
         )}
       </div>
