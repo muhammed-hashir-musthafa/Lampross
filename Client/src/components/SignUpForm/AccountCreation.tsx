@@ -7,6 +7,19 @@ import { ChevronDown, HelpCircle } from "lucide-react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { useRouter } from "next/navigation";
+import { AxiosResponse } from "axios";
+import toast from "react-hot-toast";
+import { userSignUpApi } from "@/api/auth";
+
+interface AccountFormValues {
+  name: string;
+  role: string;
+  phoneNumber: string;
+  email: string;
+  place: string;
+  age: string;
+  gender: string;
+}
 
 const AccountSchema = Yup.object().shape({
   name: Yup.string()
@@ -25,7 +38,7 @@ const AccountSchema = Yup.object().shape({
   gender: Yup.string().required("Gender is required"),
 });
 
-const initialValues = {
+const initialValues: AccountFormValues = {
   name: "",
   role: "",
   phoneNumber: "",
@@ -37,7 +50,53 @@ const initialValues = {
 
 const AccountCreationForm = () => {
   const router = useRouter();
-  const [countryCode, setCountryCode] = useState("+91");
+  const [countryCode, setCountryCode] = useState<string>("+91");
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const handleSubmit = async (values: AccountFormValues, actions: any) => {
+    setIsLoading(true);
+
+    const userData = {
+      name: values.name,
+      role: values.role,
+      phoneNumber: values.phoneNumber,
+      email: values.email,
+      place: values.place,
+      age: Number(values.age),
+      gender: values.gender,
+    };
+
+    try {
+      const response: AxiosResponse<any> = await userSignUpApi(userData);
+
+      if (response.status === 201) {
+         setIsSubmitted(true);
+        actions.setSubmitting(false);
+        toast.success("Account Created Successfully");
+        localStorage.setItem("id", response.data.user.id);
+        actions.resetForm();
+        router.push("/")
+      } else {
+        toast.error("Failed to create account. Please try again.");
+        actions.setSubmitting(false);
+        actions.resetForm();
+      }
+    } catch (error: any) {
+      if (error.response?.status === 500) {
+        toast.error("Server error. Please try again later.");
+      } else if (error.response?.status === 400) {
+        router.push("/login")
+        toast.error("User already exist. Please Login");
+      } else {
+        toast.error("An error occurred. Please try again.");
+      }
+      actions.setSubmitting(false);
+      actions.resetForm();
+    }
+
+    setIsLoading(false);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -75,13 +134,9 @@ const AccountCreationForm = () => {
           <Formik
             initialValues={initialValues}
             validationSchema={AccountSchema}
-            onSubmit={(values, actions) => {
-              console.log(values);
-              router.push("/signup/company-profile");
-              actions.setSubmitting(false);
-            }}
+            onSubmit={handleSubmit}
           >
-            {({ errors, touched, setFieldValue }) => (
+            {({ setFieldValue }) => (
               <Form className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -276,12 +331,30 @@ const AccountCreationForm = () => {
                   </a>
                 </div>
 
-                <button
-                  type="submit"
-                  className="w-full bg-orange-500 text-white py-3 rounded-md hover:bg-orange-600 transition-colors"
-                >
-                  Create account
-                </button>
+                {isSubmitted ? (
+                  <div className="flex flex-col gap-4 mt-6 w-full">
+                    <button
+                      onClick={() => router.push("/")}
+                      className="bg-green-500 text-white w-full rounded-md px-6 py-3"
+                    >
+                      Go to Home
+                    </button>
+                    <button
+                      onClick={() => router.push("/companyprofile")}
+                      className="bg-orange-500 text-white w-full rounded-md px-6 py-3"
+                    >
+                      Next to Company Profile
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full py-3 bg-orange-500 text-white rounded-md disabled:bg-gray-400"
+                  >
+                    {isLoading ? "Creating..." : "Create Account"}
+                  </button>
+                )}
               </Form>
             )}
           </Formik>

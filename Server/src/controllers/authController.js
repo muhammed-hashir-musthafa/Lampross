@@ -7,8 +7,7 @@ dotenv.config();
 // Sign Up
 export const signUp = async (req, res) => {
   try {
-    const { name, role, phoneNumber, email, place, age, gender, password } =
-      req.body;
+    const { name, role, phoneNumber, email, place, age, gender } = req.body;
 
     const existingUser = await userSchema.findOne({ email });
     if (existingUser) {
@@ -16,8 +15,6 @@ export const signUp = async (req, res) => {
         .status(400)
         .json({ success: false, message: "User already exists" });
     }
-
-    const hashedPassword = bcrypt.hashSync(password, 10);
 
     const user = new userSchema({
       name,
@@ -27,7 +24,6 @@ export const signUp = async (req, res) => {
       place,
       age,
       gender,
-      password: hashedPassword,
     });
 
     await user.save();
@@ -43,16 +39,20 @@ export const signUp = async (req, res) => {
       user: { id: user._id, name: user.name, email: user.email },
     });
   } catch (error) {
+    console.error("Sign-up Error:", error);
     res
       .status(500)
-      .json({ success: false, message: `Error: ${error.message}` });
+      .json({
+        success: false,
+        message: `Internal Server Error: ${error.message}`,
+      });
   }
 };
 
 // Sign In
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email } = req.body;
 
     const user = await userSchema.findOne({ email });
     if (!user) {
@@ -62,13 +62,13 @@ export const login = async (req, res) => {
       });
     }
 
-    const isMatch = bcrypt.compareSync(password, user.password);
+    // const isMatch = bcrypt.compareSync(password, user.password);
 
-    if (!isMatch) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Invalid credentials" });
-    }
+    // if (!isMatch) {
+    //   return res
+    //     .status(401)
+    //     .json({ success: false, message: "Invalid credentials" });
+    // }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",

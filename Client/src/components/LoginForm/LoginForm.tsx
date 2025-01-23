@@ -3,10 +3,11 @@
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import PhoneInput from "react-phone-input-2";
-import "react-phone-input-2/lib/style.css";
+import { userLoginApi } from "@/api/auth";
+import Link from "next/link";
+import Image from "next/image";
 
 const validationSchema = Yup.object({
   phoneNumber: Yup.string().required("Phone number is required"),
@@ -15,16 +16,27 @@ const validationSchema = Yup.object({
     .required("OTP is required"),
 });
 
-const LoginForm = () => {
-  const [countryCode, setCountryCode] = useState("+91");
+const LoginForm: React.FC = () => {
+  const [countryCode, setCountryCode] = useState<string>("+91");
+  const router = useRouter();
 
   const initialValues = {
     phoneNumber: "",
     otp: "",
   };
 
-  const handleSubmit = (values) => {
-    console.log("Form submitted:", values);
+  const handleSubmit = async (values: { phoneNumber: string; otp: string }) => {
+    try {
+      const response = await userLoginApi({
+        phoneNumber: values.phoneNumber,
+        otp: values.otp,
+      });
+
+      console.log("Login successful:", response);
+      router.push("/");
+    } catch (error) {
+      console.error("Login failed:", error.response?.data?.message || error);
+    }
   };
 
   return (
@@ -41,7 +53,7 @@ const LoginForm = () => {
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
           >
-            {({ errors, touched, setFieldValue }) => (
+            {({ setFieldValue }) => (
               <Form className="space-y-6">
                 <div>
                   <label
@@ -108,10 +120,7 @@ const LoginForm = () => {
 
           <p className="mt-6 text-center text-gray-600">
             Don't have an account?{" "}
-            <Link
-              href="/signup"
-              className="text-blue-600 hover:underline"
-            >
+            <Link href="/signup" className="text-blue-600 hover:underline">
               Become a partner
             </Link>
           </p>
