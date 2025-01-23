@@ -116,7 +116,7 @@ const ProductPageComponent = () => {
   const [sortBy, setSortBy] = useState("featured");
   const router = useParams();
   const designType = router?.type;
-  console.log(router.type);
+  //console.log(router.type);
 
   const Product: Product[] = [
     {
