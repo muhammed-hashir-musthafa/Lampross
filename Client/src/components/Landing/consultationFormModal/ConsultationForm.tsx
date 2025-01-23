@@ -1,6 +1,9 @@
+"use client";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Image from "next/image";
+import toast from "react-hot-toast";
+import { createBookingApi } from "@/api/booking";
 
 interface BookingFormValues {
   name: string;
@@ -12,7 +15,7 @@ interface BookingFormValues {
 const BookingSchema = Yup.object().shape({
   name: Yup.string().min(2, "Name is too short").required("Name is required"),
   phone: Yup.string()
-    .matches(/^[0-9]{10}$/, "Please enter a valid phone number")
+    .matches(/^[0-9]/, "Please enter a valid phone number")
     .required("Phone number is required"),
   email: Yup.string()
     .email("Invalid email address")
@@ -35,10 +38,33 @@ const BookingModal = ({ isOpen, onClose }: BookingModalProps) => {
     place: "",
   };
 
-  const handleSubmit = async (values: BookingFormValues) => {
-    console.log("Form submitted:", values);
-  };
+  const handleSubmit = async (
+    values: { name: string; phone: string; email: string; place: string },
+    actions: any
+  ) => {
+    try {
+      const response = await createBookingApi(values);
 
+      if (response.status === 201) {
+        toast.success("Booking Created Successfully");
+        actions.resetForm();
+        onClose();
+      } else {
+        toast.error("Failed to create booking. Please try again.");
+        actions.resetForm();
+      }
+    } catch (error: any) {
+      if (error.response?.status === 400) {
+        toast.error("Booking already exists for this Phone Number.");
+      } else if (error.response?.status === 500) {
+        toast.error("Server error. Please try again later.");
+      } else {
+        toast.error("An error occurred. Please try again.");
+      }
+    } finally {
+      actions.setSubmitting(false);
+    }
+  };
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg overflow-hidden max-w-4xl w-full flex">

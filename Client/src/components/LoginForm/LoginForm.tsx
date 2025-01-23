@@ -8,6 +8,7 @@ import PhoneInput from "react-phone-input-2";
 import { userLoginApi } from "@/api/auth";
 import Link from "next/link";
 import Image from "next/image";
+import "react-phone-input-2/lib/style.css";
 
 const validationSchema = Yup.object({
   phoneNumber: Yup.string().required("Phone number is required"),
@@ -33,7 +34,7 @@ const LoginForm: React.FC = () => {
       });
 
       console.log("Login successful:", response);
-      router.push("/");
+      router.push("/dashboard");
     } catch (error) {
       console.error("Login failed:", error.response?.data?.message || error);
     }
@@ -56,12 +57,6 @@ const LoginForm: React.FC = () => {
             {({ setFieldValue }) => (
               <Form className="space-y-6">
                 <div>
-                  <label
-                    htmlFor="phoneNumber"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Phone Number
-                  </label>
                   <div className="flex items-center">
                     <PhoneInput
                       country={"in"}
