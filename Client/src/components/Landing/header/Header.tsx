@@ -314,7 +314,7 @@ export const Header = () => {
                         <Button
                           onClick={() => {
                             localStorage.removeItem("id");
-                            router.push("login");
+                            router.push("/login");
                             userLogoutApi();
                           }}
                           variant="outline"
@@ -416,7 +416,7 @@ export const Header = () => {
                       onClick={() => {
                         localStorage.removeItem("id");
                         userLogoutApi();
-                        router.push("login");
+                        router.push("/login");
                       }}
                     >
                       Logout

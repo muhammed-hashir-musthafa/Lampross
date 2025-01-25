@@ -52,9 +52,9 @@ export const signUp = async (req, res) => {
 // Sign In
 export const login = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { phoneNumber } = req.body;
 
-    const user = await userSchema.findOne({ email });
+    const user = await userSchema.findOne({ phoneNumber });
     if (!user) {
       return res.status(400).json({
         success: false,

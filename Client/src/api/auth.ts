@@ -51,6 +51,10 @@ export const userLoginApi = async (credentials: {
   return response.data;
 };
 
+export const userLogoutApi = async (): Promise<LoginResponse> => {
+  const response = await axiosInstance.post("/auth/logout");
+  return response.data;
+};
 // export const verifyOtpApi = async (
 //   otp: string
 // ): Promise<AxiosResponse<any>> => {
