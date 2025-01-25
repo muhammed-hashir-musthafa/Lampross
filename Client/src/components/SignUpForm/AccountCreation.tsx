@@ -103,7 +103,6 @@ const AccountCreationForm = () => {
         if (error.response?.status === 500) {
           toast.error("Server error. Please try again later.");
         } else if (error.response?.status === 400) {
-          router.push("/login");
           toast.error("User already exist. Please Login");
         } else {
           toast.error("An error occurred. Please try again.");
@@ -358,7 +357,7 @@ const AccountCreationForm = () => {
                       Go to Home
                     </button>
                     <button
-                      onClick={() => router.push("/companyprofile")}
+                      onClick={() => router.push("/signup/company-profile")}
                       className="bg-orange-500 text-white w-full rounded-md px-6 py-3"
                     >
                       Next to Company Profile
