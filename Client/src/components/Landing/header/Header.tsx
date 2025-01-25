@@ -20,7 +20,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../../ui/button";
 import Image from "next/image";
 import {
@@ -32,6 +32,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { userLogoutApi } from "@/api/auth";
+import { useRouter } from "next/navigation";
 
 interface MenuItem {
   title: string;
@@ -175,8 +177,16 @@ const menuSections: MenuSection[] = [
   },
 ];
 export const Header = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<MenuSection | null>(null);
+
+  useEffect(() => {
+    const id =
+      typeof window !== "undefined" ? localStorage.getItem("id") : null;
+    setIsLoggedIn(Boolean(id));
+  }, []);
 
   return (
     <header className="sticky top-0 left-0 right-0 bg-white border-b z-50">
@@ -298,25 +308,48 @@ export const Header = () => {
                       </div>
                     </>
                   )}
-
-                  <div className="p-4 border-t mt-auto">
-                    <div className="flex flex-col gap-2">
-                      <Link href={"/login"}>
+                  {isLoggedIn ? (
+                    <div className="p-4 border-t mt-auto">
+                      <div className="flex flex-col gap-2">
                         <Button
+                          onClick={() => {
+                            localStorage.removeItem("id");
+                            router.push("login");
+                            userLogoutApi();
+                          }}
                           variant="outline"
                           className="w-full justify-start"
                         >
-                          Login
+                          Logout
                         </Button>
-                      </Link>
-                      <Link href={"/signup"}>
-                        <Button className="w-full justify-start">
-                          Become a partner
-                          <UserPlus className="ml-2 h-4 w-4" />
-                        </Button>
-                      </Link>
+                        <Link href={"/seller"}>
+                          <Button className="w-full justify-start">
+                            Join as seller
+                            <UserPlus className="ml-2 h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="p-4 border-t mt-auto">
+                      <div className="flex flex-col gap-2">
+                        <Link href={"/login"}>
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start"
+                          >
+                            Login
+                          </Button>
+                        </Link>
+                        <Link href={"/signup"}>
+                          <Button className="w-full justify-start">
+                            Become a partner
+                            <UserPlus className="ml-2 h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>
@@ -376,25 +409,55 @@ export const Header = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
               ))}
-              <Link href={"/login"}>
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger>
-                    Login
-                    <span
-                      className="solar--login-bold relative top-[1px] ml-1 h-3 w-3"
-                      aria-hidden="true"
-                    />
-                  </NavigationMenuTrigger>
-                </NavigationMenuItem>
-              </Link>
-              <NavigationMenuItem>
-                <Link href="/signup">
-                  <Button className="h-10">
-                    Become a partner
-                    <UserPlus />
-                  </Button>
-                </Link>
-              </NavigationMenuItem>
+              {isLoggedIn ? (
+                <>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger
+                      onClick={() => {
+                        localStorage.removeItem("id");
+                        userLogoutApi();
+                        router.push("login");
+                      }}
+                    >
+                      Logout
+                      <span
+                        className="solar--login-bold relative top-[1px] ml-1 h-3 w-3"
+                        aria-hidden="true"
+                      />
+                    </NavigationMenuTrigger>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <Link href="/seller">
+                      <Button className="h-10">
+                        Join as seller
+                        <UserPlus />
+                      </Button>
+                    </Link>
+                  </NavigationMenuItem>
+                </>
+              ) : (
+                <>
+                  <Link href={"/login"}>
+                    <NavigationMenuItem>
+                      <NavigationMenuTrigger>
+                        Login
+                        <span
+                          className="solar--login-bold relative top-[1px] ml-1 h-3 w-3"
+                          aria-hidden="true"
+                        />
+                      </NavigationMenuTrigger>
+                    </NavigationMenuItem>
+                  </Link>
+                  <NavigationMenuItem>
+                    <Link href="/signup">
+                      <Button className="h-10">
+                        Become a partner
+                        <UserPlus />
+                      </Button>
+                    </Link>
+                  </NavigationMenuItem>
+                </>
+              )}
             </NavigationMenuList>
           </NavigationMenu>
         </nav>

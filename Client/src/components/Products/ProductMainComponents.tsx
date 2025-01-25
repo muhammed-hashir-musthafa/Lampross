@@ -109,7 +109,7 @@ const ProductMainPageComponent = () => {
         const response = await getProductsApi({});
         if (response.data.success) {
           setCategories(response.data.products);
-          console.log(response.data.products);
+          // console.log(response.data.products);
         } else {
           setError("Failed to fetch categories.");
         }
