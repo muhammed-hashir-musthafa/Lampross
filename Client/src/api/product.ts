@@ -1,4 +1,18 @@
 import axiosInstance from "@/lib/axiosInstance";
+import { AxiosResponse } from "axios";
+
+interface Category {
+  _id: string;
+  category: {
+    name: string;
+    slug: string;
+    image: string;
+  };
+  title?: string; // Optional properties from TrendingProduct
+  location?: string;
+  price?: number;
+  tags?: string[];
+}
 
 interface AddProductResponse {
   success: boolean;
@@ -12,6 +26,11 @@ interface AddProductResponse {
     images: string[];
     createdAt: string;
   };
+}
+interface ProductResponse {
+  success: boolean;
+  count: number;
+  products: Category[];
 }
 
 export const addProductApi = async (
@@ -32,4 +51,20 @@ export const addProductApi = async (
     console.error("Error adding product:", error);
     throw error;
   }
+};
+
+export const getProductsApi = async (queryParams: {
+  type?: string;
+  category?: string;
+  city?: string;
+  builtUpArea?: string;
+  layout?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  sortBy?: string;
+}): Promise<AxiosResponse<ProductResponse>> => {
+  const response = await axiosInstance.get<ProductResponse>("/product", {
+    params: queryParams,
+  });
+  return response;
 };

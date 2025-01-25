@@ -19,33 +19,32 @@ export const getAllProducts = async (req, res) => {
 
     const filter = {};
 
-    // Apply filter conditions based on query parameters
     if (type) filter.style = type;
     if (category) filter.category = category;
     if (city) filter.city = city;
     if (builtUpArea) filter.builtUpArea = builtUpArea;
     if (layout) filter.layout = layout;
 
-    // Apply price range filter if minPrice or maxPrice are provided
     if (minPrice || maxPrice) {
       filter.price = {};
       if (minPrice) filter.price.$gte = Number(minPrice);
       if (maxPrice) filter.price.$lte = Number(maxPrice);
     }
 
-    // Sorting options
     const sortOptions = {
       featured: { tags: -1 },
       priceLowToHigh: { price: 1 },
       priceHighToLow: { price: -1 },
     };
 
-    // Apply filtering and sorting
     const products = await productSchema
       .find(filter)
-      .sort(sortOptions[sortBy] || {}) // Default to no sorting if sortBy is not valid
-      .populate("category")
-      .populate("subCategory");
+      .sort(sortOptions[sortBy] || {})
+      .populate("category", "name")
+      .populate("subCategory", "name")
+      .select(
+        "productName productCode price stockQuantity productDesc category subCategory images"
+      );
 
     res.status(200).json({
       success: true,
@@ -111,20 +110,19 @@ export const addProduct = async (req, res) => {
         errors: error.details.map((err) => err.message),
       });
     }
+
     const productCode = req.body.productCode;
-    const existingProduct = productSchema.findOne(productCode);
+    const existingProduct = await productSchema.findOne({ productCode });
 
-    if(existingProduct){
+    if (existingProduct) {
       return res
-      .status(400)
-      .json({ success: false, message: "Product already exists" });
-  }
-
+        .status(400)
+        .json({ success: false, message: "Product already exists" });
+    }
     let category = await categorySchema.findOne({
-      name: { $regex: new RegExp(`^${req.body.category}$`, "i") },
+      name: req.body.category.trim(),
     });
-
-    if (!category) {
+    if (!category.name) {
       category = new categorySchema({ name: req.body.category });
       await category.save();
     }

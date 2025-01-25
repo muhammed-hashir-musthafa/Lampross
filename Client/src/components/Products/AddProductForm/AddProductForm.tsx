@@ -854,6 +854,7 @@ const AddProductForm = () => {
               </button>
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
               >
                 {isSubmitting ? "Adding Product..." : "Add Product"}

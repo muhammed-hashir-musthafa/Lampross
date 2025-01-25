@@ -1,18 +1,22 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { getProductsApi } from "@/api/product";
+import { AxiosError } from "axios";
 
 interface Category {
-  id: string;
-  title: string;
-  image: string;
-  slug: string;
+  _id: string;
+  category: {
+    name: string;
+    slug: string;
+    image: string;
+  };
 }
 
 interface TrendingProduct {
-  id: string;
+  _id: string;
   title: string;
   image: string;
   location: string;
@@ -22,34 +26,34 @@ interface TrendingProduct {
 
 const CategoryCard = ({ category }: { category: Category }) => (
   <Link
-    href={`/products/${category.slug}`}
+    href={`/products/${category.category.name}`}
     className="relative group overflow-hidden rounded-lg"
   >
     <div className="relative h-48 w-full">
       <Image
-        src={category.image}
-        alt={category.title}
+        src={category.category.image || "https://placehold.co/800x600.jpg"}
+        alt={category.category.name}
         fill
         className="object-cover transition-transform duration-300 group-hover:scale-110"
       />
       <div className="absolute inset-0 bg-black bg-opacity-40 transition-opacity group-hover:bg-opacity-30" />
       <h3 className="absolute bottom-4 left-4 text-white text-xl font-semibold">
-        {category.title}
+        {category.category.name}
       </h3>
     </div>
   </Link>
 );
 
-const TrendingProductCard = ({ Product }: { Product: TrendingProduct }) => (
+const TrendingProductCard = ({ product }: { product: TrendingProduct }) => (
   <div className="overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow">
     <div className="relative h-48">
       <Image
-        src={Product.image}
-        alt={Product.title}
+        src={product.image || "https://placehold.co/800x600.jpg"}
+        alt={product.title}
         fill
         className="object-cover"
       />
-      {Product.tags.map((tag) => (
+      {product.tags.map((tag) => (
         <span
           key={tag}
           className="absolute top-2 left-2 bg-white text-sm px-2 py-1 rounded-full"
@@ -59,62 +63,22 @@ const TrendingProductCard = ({ Product }: { Product: TrendingProduct }) => (
       ))}
     </div>
     <div className="p-4">
-      <h3 className="font-medium mb-2">{Product.title}</h3>
-      <p className="text-sm text-gray-600 mb-2">{Product.location}</p>
-      <p className="font-bold">₹{Product.price} Lacks</p>
+      <h3 className="font-medium mb-2">{product.title}</h3>
+      <p className="text-sm text-gray-600 mb-2">{product.location}</p>
+      <p className="font-bold">₹{product.price} Lacks</p>
     </div>
   </div>
 );
 
 const ProductMainPageComponent = () => {
-  const categories: Category[] = [
-    {
-      id: "1",
-      title: "Sanitary",
-      image: "https://placehold.co/800x600.jpg",
-      slug: "sanitary",
-    },
-    {
-      id: "2",
-      title: "Kitchen Fittings",
-      image: "https://placehold.co/800x600",
-      slug: "kitchen-fittings",
-    },
-    {
-      id: "3",
-      title: "Contractors",
-      image: "https://placehold.co/800x600",
-      slug: "contractors",
-    },
-    {
-      id: "4",
-      title: "Furniture",
-      image: "https://placehold.co/800x600",
-      slug: "furniture",
-    },
-    {
-      id: "5",
-      title: "Electronics",
-      image: "https://placehold.co/800x600.jpg",
-      slug: "electronics",
-    },
-    {
-      id: "6",
-      title: "Plumbing",
-      image: "https://placehold.co/800x600",
-      slug: "plumbing",
-    },
-    {
-      id: "7",
-      title: "Flooring",
-      image: "https://placehold.co/800x600",
-      slug: "flooring",
-    },
-  ];
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
 
+ 
   const trendingProducts: TrendingProduct[] = [
     {
-      id: "1",
+      _id: "1",
       title: "Modern Budget Kitchen Interior",
       image: "https://placehold.co/800x600",
       location: "Calicut, Kerala",
@@ -122,7 +86,7 @@ const ProductMainPageComponent = () => {
       tags: ["Featured"],
     },
     {
-      id: "2",
+      _id: "2",
       title: "Stylish Wooden Flooring",
       image: "https://placehold.co/800x600",
       location: "Kochi, Kerala",
@@ -130,7 +94,7 @@ const ProductMainPageComponent = () => {
       tags: ["New", "Popular"],
     },
     {
-      id: "3",
+      _id: "3",
       title: "Contemporary Dining Room Setup",
       image: "https://placehold.co/800x600",
       location: "Trivandrum, Kerala",
@@ -138,6 +102,45 @@ const ProductMainPageComponent = () => {
       tags: ["Trending"],
     },
   ];
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await getProductsApi({});
+        if (response.data.success) {
+          setCategories(response.data.products);
+          console.log(response.data.products);
+        } else {
+          setError("Failed to fetch categories.");
+        }
+      } catch (error: unknown) {
+        if (error instanceof AxiosError) {
+          setError("Error fetching categories.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-100">
+        <div className="flex items-center space-x-4">
+          <div className="w-8 h-8 border-4 border-t-4 border-blue-500 rounded-full animate-spin"></div>
+          <p className="text-xl text-gray-700 font-semibold">
+            Loading, please wait...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -153,9 +156,7 @@ const ProductMainPageComponent = () => {
         <h1 className="text-3xl font-bold mb-4">Products</h1>
         <p className="text-gray-600 max-w-3xl">
           We bring you carefully curated interior Product ideas, to give your
-          home a brand new look. Explore exclusive interior Products and trends
-          that are easy to implement as they are practical. Get best of interior
-          ideas from our best interior.
+          home a brand new look.
         </p>
       </div>
 
@@ -163,7 +164,7 @@ const ProductMainPageComponent = () => {
         <h2 className="text-2xl font-semibold mb-6">Categories</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {categories.map((category) => (
-            <CategoryCard key={category.id} category={category} />
+            <CategoryCard key={category._id} category={category} />
           ))}
         </div>
       </section>
@@ -181,8 +182,8 @@ const ProductMainPageComponent = () => {
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {trendingProducts.map((Product) => (
-            <TrendingProductCard key={Product.id} Product={Product} />
+          {trendingProducts.map((product) => (
+            <TrendingProductCard key={product._id} product={product} />
           ))}
         </div>
       </section>
