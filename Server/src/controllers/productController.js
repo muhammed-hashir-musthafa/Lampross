@@ -86,7 +86,17 @@ export const getProduct = async (req, res) => {
 
 export const addProduct = async (req, res) => {
   try {
-    const dimensions = JSON.parse(req.body.dimensions);
+    let dimensions;
+    try {
+      dimensions = req.body.dimensions
+        ? JSON.parse(req.body.dimensions)
+        : undefined;
+    } catch (err) {
+      return res.status(402).json({
+        success: false,
+        message: "Invalid JSON format for dimensions.",
+      });
+    }
 
     const { error } = validateProduct({
       ...req.body,
@@ -95,12 +105,20 @@ export const addProduct = async (req, res) => {
     });
 
     if (error) {
-      return res.status(400).json({
+      return res.status(401).json({
         success: false,
         message: "Validation error",
         errors: error.details.map((err) => err.message),
       });
     }
+    const productCode = req.body.productCode;
+    const existingProduct = productSchema.findOne(productCode);
+
+    if(existingProduct){
+      return res
+      .status(400)
+      .json({ success: false, message: "Product already exists" });
+  }
 
     let category = await categorySchema.findOne({
       name: { $regex: new RegExp(`^${req.body.category}$`, "i") },

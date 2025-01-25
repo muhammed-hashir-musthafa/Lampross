@@ -27,7 +27,6 @@ export const addProductApi = async (
         },
       }
     );
-    console.log(response);
     return response.data;
   } catch (error) {
     console.error("Error adding product:", error);
