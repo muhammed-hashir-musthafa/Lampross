@@ -92,7 +92,6 @@ const AccountCreationForm = () => {
         toast.success("Account Created Successfully");
         localStorage.setItem("id", response.data.user.id);
         actions.resetForm();
-        router.push("/");
       } else {
         toast.error("Failed to create account. Please try again.");
         actions.setSubmitting(false);
