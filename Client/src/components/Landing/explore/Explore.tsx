@@ -22,7 +22,8 @@ import {
 import * as Yup from "yup";
 import CostEstimation from "../costEstimation/CostEstimation";
 import { calculateEstimateApi } from "@/api/estimate";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { State, City, IState, ICity } from "country-state-city";
 
 interface FormValues {
   state: string;
@@ -117,6 +118,8 @@ const validationSchema = Yup.object().shape({
 export default function ExploreSection() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [costData, setCostData] = useState<CostData | null>(null);
+  const [states, setStates] = useState<IState[]>([]);
+  const [cities, setCities] = useState<ICity[]>([]);
 
   const initialValues: FormValues = {
     state: "",
@@ -124,6 +127,16 @@ export default function ExploreSection() {
     area: "",
     areaUnit: "sqft",
     constructionType: "",
+  };
+
+  useEffect(() => {
+    const indiaStates = State.getStatesOfCountry("IN");
+    setStates(indiaStates);
+  }, []);
+
+  const handleStateChange = (stateIsoCode: string) => {
+    const stateCities = City.getCitiesOfState("IN", stateIsoCode);
+    setCities(stateCities);
   };
 
   const handleSubmit = async (
@@ -202,18 +215,24 @@ export default function ExploreSection() {
                           form: FormikProps<FormValues>;
                         }) => (
                           <Select
-                            onValueChange={(value) =>
-                              form.setFieldValue(field.name, value)
-                            }
+                            onValueChange={(value) => {
+                              form.setFieldValue(field.name, value);
+                              handleStateChange(value);
+                            }}
                             value={field.value}
                           >
                             <SelectTrigger className="w-full h-14 border border-gray-200 shadow-sm">
                               <SelectValue placeholder="Select state" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="state1">State 1</SelectItem>
-                              <SelectItem value="state2">State 2</SelectItem>
-                              <SelectItem value="state3">State 3</SelectItem>
+                              {states.map((state) => (
+                                <SelectItem
+                                  key={state.isoCode}
+                                  value={state.isoCode}
+                                >
+                                  {state.name}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         )}
@@ -247,9 +266,11 @@ export default function ExploreSection() {
                               <SelectValue placeholder="Select city" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="city1">City 1</SelectItem>
-                              <SelectItem value="city2">City 2</SelectItem>
-                              <SelectItem value="city3">City 3</SelectItem>
+                              {cities.map((city) => (
+                                <SelectItem key={city.name} value={city.name}>
+                                  {city.name}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         )}

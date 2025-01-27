@@ -44,11 +44,11 @@ const CostEstimation: React.FC<CostEstimationProps> = ({ costData }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg p-6 max-w-5xl shadow-md">
+    <div className="bg-white rounded-lg p-6 max-w-5xl shadow-md mx-auto">
       <h2 className="text-lg font-medium text-gray-900 mb-6">Estimated cost</h2>
 
-      <div className="flex items-center space-x-6">
-        <div className="flex-1 space-y-6 bg-gray-100 p-4 rounded-lg">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-6 bg-gray-100 p-4 rounded-lg">
           <div>
             <h3 className="text-sm text-gray-600 mb-2">
               Total Construction cost (without interior)
@@ -75,7 +75,7 @@ const CostEstimation: React.FC<CostEstimationProps> = ({ costData }) => {
           </div>
         </div>
 
-        <div className="flex items-center justify-center bg-gray-100 p-4 rounded-lg">
+        <div className="flex flex-row items-center justify-center bg-gray-100 p-4 rounded-lg">
           <div className="relative w-48 h-48">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
