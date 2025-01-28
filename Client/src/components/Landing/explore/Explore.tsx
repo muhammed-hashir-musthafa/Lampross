@@ -107,6 +107,7 @@ const validationSchema = Yup.object().shape({
   state: Yup.string().required("State is required"),
   city: Yup.string().required("City is required"),
   area: Yup.number()
+    .typeError("Area must be a valid number")
     .positive("Area must be positive")
     .required("Area is required"),
   areaUnit: Yup.string()
