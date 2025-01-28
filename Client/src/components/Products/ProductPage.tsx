@@ -32,14 +32,16 @@ const FilterDropdown = ({
   options,
   value,
   onChange,
+  className,
 }: {
   label: string;
   options: string[];
   value: string;
   onChange: (value: string) => void;
+  className?: string;
 }) => {
   return (
-    <div className="relative w-48">
+    <div className={`relative ${className}`}>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -69,18 +71,18 @@ const FilterDropdown = ({
   );
 };
 
-const ProductCard = ({ design }: { design: Product }) => {
+const ProductCard = ({ product }: { product: Product }) => {
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
       <div className="relative h-64">
         <Image
-          src={design.image}
-          alt={design.title}
+          src={product.image}
+          alt={product.title}
           fill
           className="object-cover"
         />
         <div className="absolute top-2 left-2">
-          {design.tags.map((tag) => (
+          {product.tags.map((tag) => (
             <span
               key={tag}
               className="inline-block bg-white text-sm px-2 py-1 rounded-full mr-2 shadow-sm"
@@ -91,12 +93,12 @@ const ProductCard = ({ design }: { design: Product }) => {
         </div>
       </div>
       <div className="p-4">
-        <h3 className="text-lg font-medium mb-2">{design.title}</h3>
+        <h3 className="text-lg font-medium mb-2">{product.title}</h3>
         <div className="text-sm text-gray-500 mb-2">
-          Style: {design.style} | {design.city}
+          Style: {product.style} | {product.city}
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-lg font-bold">₹{design.price} Lacks</span>
+          <span className="text-lg font-bold">₹{product.price} Lacks</span>
         </div>
       </div>
     </div>
@@ -115,10 +117,9 @@ const ProductPageComponent = () => {
 
   const [sortBy, setSortBy] = useState("featured");
   const router = useParams();
-  const designType = router?.type;
-  //console.log(router.type);
+  const productType = router?.type;
 
-  const Product: Product[] = [
+  const products: Product[] = [
     {
       id: "1",
       title: "Modern Budget Living Room Interior",
@@ -144,7 +145,7 @@ const ProductPageComponent = () => {
       tags: ["Featured"],
     },
     {
-      id: "2",
+      id: "3",
       title: "Modern Budget Living Room Interior",
       image: "https://placehold.co/800x600",
       price: 42,
@@ -156,7 +157,7 @@ const ProductPageComponent = () => {
       tags: ["Featured"],
     },
     {
-      id: "2",
+      id: "4",
       title: "Modern Budget Living Room Interior",
       image: "https://placehold.co/800x600",
       price: 42,
@@ -190,34 +191,39 @@ const ProductPageComponent = () => {
             Products
           </Link>
           <span className="mx-2 text-gray-400">/</span>
-          <span className="text-gray-900">{designType}</span>
+          <span className="text-gray-900">{productType}</span>
         </nav>
       </div>
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-4">
           <span className="text-[#FF7800]">
-            {designType?.toString().charAt(0).toUpperCase()}
-            {designType?.toString().slice(1)}{" "}
+            {productType?.toString().charAt(0).toUpperCase()}
+            {productType?.toString().slice(1)}{" "}
           </span>
-          Product
+          Products
         </h1>
         <p className="text-gray-600">
-          Discover a wide range of handpicked {designType} interior Product and
-          décor ideas at Livspace. We bring you {designType} Product that are
-          customizable, practical and trendy.
+          Discover a wide range of handpicked {productType} interior products
+          and décor ideas at Livspace. We bring you {productType} products that
+          are customizable, practical, and trendy.
         </p>
       </div>
 
-      <div className="flex items-center space-x-4 mb-8">
-        <div className="flex space-x-4">
+      <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 mb-8">
+        <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
           <FilterDropdown
             label="Sort By"
             options={["Featured", "Price Low to High", "Price High to Low"]}
             value={sortBy}
             onChange={setSortBy}
+            className="w-full md:w-48"
           />
-          <span className="text-gray-600 text-sm">Filter by</span>{" "}
+
+          <span className="text-gray-600 text-sm hidden md:block">
+            Filter by
+          </span>
+
           {Object.entries(filterOptions).map(([key, options]) => (
             <FilterDropdown
               key={key}
@@ -225,14 +231,15 @@ const ProductPageComponent = () => {
               options={options}
               value={filters[key as keyof typeof filters]}
               onChange={(value) => setFilters({ ...filters, [key]: value })}
+              className="w-full md:w-48"
             />
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {Product.map((design) => (
-          <ProductCard key={design.id} design={design} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} />
         ))}
       </div>
     </div>

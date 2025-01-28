@@ -33,14 +33,16 @@ const FilterDropdown = ({
   options,
   value,
   onChange,
+  className,
 }: {
   label: string;
   options: string[];
   value: string;
   onChange: (value: string) => void;
+  className?: string;
 }) => {
   return (
-    <div className="relative w-48">
+    <div className={`relative ${className}`}>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -118,7 +120,6 @@ const DesignsPageComponent = () => {
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const router = useParams();
   const designType = router?.type;
-  // console.log(designType);
 
   const designs: Design[] = [
     {
@@ -146,7 +147,7 @@ const DesignsPageComponent = () => {
       tags: ["Featured"],
     },
     {
-      id: "2",
+      id: "3",
       title: "Modern Budget Living Room Interior",
       image: "https://placehold.co/800x600",
       price: 42,
@@ -158,7 +159,7 @@ const DesignsPageComponent = () => {
       tags: ["Featured"],
     },
     {
-      id: "2",
+      id: "4",
       title: "Modern Budget Living Room Interior",
       image: "https://placehold.co/800x600",
       price: 42,
@@ -198,7 +199,12 @@ const DesignsPageComponent = () => {
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-4">
-        <span className="text-[#FF7800]">{ designType?.toString().charAt(0).toUpperCase()}{designType?.toString().slice(1)}  </span>Designs        </h1>
+          <span className="text-[#FF7800]">
+            {designType?.toString().charAt(0).toUpperCase()}
+            {designType?.toString().slice(1)}{" "}
+          </span>
+          Designs{" "}
+        </h1>
         <p className="text-gray-600">
           Discover a wide range of handpicked {designType} interior designs and
           décor ideas at Livspace. We bring you {designType} designs that are
@@ -206,15 +212,20 @@ const DesignsPageComponent = () => {
         </p>
       </div>
 
-      <div className="flex items-center space-x-4 mb-8">
-        <div className="flex space-x-4">
+      <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 mb-8">
+        <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
           <FilterDropdown
             label="Sort By"
             options={["Featured", "Price Low to High", "Price High to Low"]}
             value={sortBy}
             onChange={setSortBy}
+            className="w-full md:w-48"
           />
-          <span className="text-gray-600 text-sm">Filter by</span>{" "}
+
+          <span className="text-gray-600 text-sm hidden md:block">
+            Filter by
+          </span>
+
           {Object.entries(filterOptions).map(([key, options]) => (
             <FilterDropdown
               key={key}
@@ -222,12 +233,13 @@ const DesignsPageComponent = () => {
               options={options}
               value={filters[key as keyof typeof filters]}
               onChange={(value) => setFilters({ ...filters, [key]: value })}
+              className="w-full md:w-48"
             />
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {designs.map((design) => (
           <DesignCard key={design.id} design={design} />
         ))}
