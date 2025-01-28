@@ -89,6 +89,7 @@ const menuSections: MenuSection[] = [
     mainItems: [
       {
         items: [
+          { title: "All Professional", href: "/professionals" },
           { title: "Architect", href: "/professionals/architect" },
           { title: "Civil engineer", href: "/professionals/civil-engineer" },
           {
